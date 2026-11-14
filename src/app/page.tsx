@@ -1,14 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import confetti from "canvas-confetti";
+import { RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Player, Scores } from "@/components/game/types";
+import { Player, Scores, WinningLine } from "@/components/game/types";
 import { PlayerNameModal } from "@/components/game/player-name-modal";
 import { GameBoard } from "@/components/game/game-board";
 import { GameStatus } from "@/components/game/game-status";
 import { ScoreBoard } from "@/components/game/score-board";
 
-const WINNING_LINES = [
+const WINNING_LINES: WinningLine[] = [
   { a: 0, b: 1, c: 2 },
   { a: 3, b: 4, c: 5 },
   { a: 6, b: 7, c: 8 },
@@ -28,16 +30,17 @@ export default function TicTacToePage() {
   const [playerXName, setPlayerXName] = useState<string>("Player X");
   const [playerOName, setPlayerOName] = useState<string>("Player O");
 
-  const calculateWinner = (squares: Player[]): Player => {
-    for (const { a, b, c } of WINNING_LINES) {
+  const getWinResult = (squares: Player[]) => {
+    for (const line of WINNING_LINES) {
+      const { a, b, c } = line;
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        return squares[a];
+        return { winner: squares[a], line };
       }
     }
-    return null;
+    return { winner: null, line: null };
   };
 
-  const winner = calculateWinner(board);
+  const { winner, line: winningLine } = getWinResult(board);
   const isDraw = !winner && board.every((square) => square !== null);
 
   const handleStartGame = (nameX: string, nameO: string) => {
@@ -53,9 +56,14 @@ export default function TicTacToePage() {
     newBoard[index] = isXNext ? "X" : "O";
     setBoard(newBoard);
 
-    const newWinner = calculateWinner(newBoard);
+    const { winner: newWinner } = getWinResult(newBoard);
     if (newWinner) {
       setScores((prev) => ({ ...prev, [newWinner]: prev[newWinner] + 1 }));
+      confetti({
+        particleCount: 70,
+        spread: 60,
+        origin: { y: 0.6 },
+      });
     } else if (newBoard.every((sq) => sq !== null)) {
       setScores((prev) => ({ ...prev, draws: prev.draws + 1 }));
     } else {
@@ -75,15 +83,16 @@ export default function TicTacToePage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50/70 flex flex-col items-center justify-center p-6">
+    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/60 via-slate-50 to-red-50/40 flex flex-col items-center justify-center p-6">
       <PlayerNameModal
         open={isNameModalOpen}
         onOpenChange={setIsNameModalOpen}
         onStartGame={handleStartGame}
       />
 
+      {/* Header */}
       <div className="text-center mb-10">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">
+        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-slate-900 to-red-600 bg-clip-text text-transparent mb-2">
           Tic-Tac-Toe
         </h1>
         <p className="text-slate-600 text-base">
@@ -91,9 +100,12 @@ export default function TicTacToePage() {
         </p>
       </div>
 
+      {/* Main Layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl w-full items-start">
         <GameBoard
           board={board}
+          isXNext={isXNext}
+          winningLine={winningLine}
           disabled={Boolean(winner)}
           onSquareClick={handleSquareClick}
         />
@@ -111,21 +123,25 @@ export default function TicTacToePage() {
             scores={scores}
             playerXName={playerXName}
             playerOName={playerOName}
+            isXNext={isXNext}
+            gameOver={Boolean(winner || isDraw)}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3.5">
             <Button
               onClick={resetBoard}
-              className="bg-zinc-500 hover:bg-zinc-600 text-white rounded-lg h-11 font-medium"
+              className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-12 font-semibold shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              New Game
+              <RotateCcw className="h-4 w-4" />
+              New Round
             </Button>
             <Button
               onClick={resetAll}
               variant="outline"
-              className="bg-white hover:bg-slate-50 text-slate-800 border-slate-200 rounded-lg h-11 font-medium"
+              className="bg-white hover:bg-slate-50 text-slate-800 border-slate-200 rounded-xl h-12 font-semibold shadow-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2"
             >
-              Reset All
+              <Users className="h-4 w-4" />
+              Change Players
             </Button>
           </div>
         </div>
