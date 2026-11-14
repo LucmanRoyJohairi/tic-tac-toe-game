@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tic-Tac-Toe 🦶
 
-## Getting Started
+A playful, modern take on the classic **Tic-Tac-Toe** game built with **React 19**, **Next.js**, **Tailwind CSS**, and **shadcn/ui**—complete with custom player names, retro 8-bit chiptune audio, winning-line highlights, and celebratory confetti.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Custom Player Setup:** Interactive welcome modal to enter names for Player X and Player O before starting a match.
+- **Retro 8-Bit Arcade Audio:** Zero-dependency Web Audio API synthesizer generating distinct X/O placement pops, victory fanfares, draw jingles, and a bouncy chiptune background loop (with a quick mute toggle).
+- **Interactive Game Board:** Ghost hover previews showing the active player's mark, smooth placement animations, and glowing highlights across the winning three-in-a-row tiles.
+- **Victory Celebrations:** Confetti bursts followed by a color-matched end-of-round summary modal.
+- **Live Scoreboard:** Tracks wins for both players plus draws across multiple rounds.
+- **Mobile Responsive:** Adapts seamlessly between mobile, tablet, and desktop viewports.
+
+## 🛠️ Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org) (App Router)
+- **Library:** [React 19](https://react.dev)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com)
+- **UI Components:** [shadcn/ui](https://shadcn.com) & [Lucide Icons](https://lucide.dev)
+- **Effects & Audio:** `canvas-confetti` & native Web Audio API
+
+## 📁 Project Structure
+
+```text
+├── public/
+│   └── tic-tac-toe-logo.png      # Custom game logo
+└── src/
+    ├── app/
+    │   ├── globals.css           # Tailwind styles & cursor rules
+    │   ├── layout.tsx            # Inter font & metadata config
+    │   └── page.tsx              # Main game state & layout
+    ├── components/
+    │   ├── game/
+    │   │   ├── game-board.tsx        # 3x3 grid with hover previews & win highlights
+    │   │   ├── game-over-modal.tsx   # End-of-round summary pop-up
+    │   │   ├── game-status.tsx       # Active turn & winner banner
+    │   │   ├── player-name-modal.tsx # Initial player setup pop-up
+    │   │   ├── score-board.tsx       # Win & draw tracker
+    │   │   └── types.ts              # Shared TypeScript interfaces
+    │   └── ui/                   # shadcn/ui primitives (Button, Card, Dialog, Input, Label)
+    └── lib/
+        └── sound-effects.ts      # Web Audio API 8-bit synthesizer
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Clone the repository
+```bash
+git clone <your-repo-url>
+cd tic-tac-toe
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Install dependencies
+```bash
+npm install
+```
 
-## Learn More
+### 3. Run the development server
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Open [http://localhost:3000](http://localhost:3000) in your browser to start playing.
