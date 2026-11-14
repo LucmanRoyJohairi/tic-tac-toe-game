@@ -10,7 +10,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Tic-Tac-Toe",
   description: "Challenge your friends in this classic game!",
+  icons: {
+    icon: "/tic-tac-toe-logo.png",
+  },
 };
+
 
 export default function RootLayout({
   children,

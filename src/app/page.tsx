@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import Image from "next/image";
 import confetti from "canvas-confetti";
 import { RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { PlayerNameModal } from "@/components/game/player-name-modal";
 import { GameBoard } from "@/components/game/game-board";
 import { GameStatus } from "@/components/game/game-status";
 import { ScoreBoard } from "@/components/game/score-board";
+import { GameOverModal } from "@/components/game/game-over-modal";
 
 const WINNING_LINES: WinningLine[] = [
   { a: 0, b: 1, c: 2 },
@@ -27,8 +29,11 @@ export default function TicTacToePage() {
   const [scores, setScores] = useState<Scores>({ X: 0, O: 0, draws: 0 });
 
   const [isNameModalOpen, setIsNameModalOpen] = useState<boolean>(true);
+  const [isGameOverModalOpen, setIsGameOverModalOpen] = useState<boolean>(false);
   const [playerXName, setPlayerXName] = useState<string>("Player X");
   const [playerOName, setPlayerOName] = useState<string>("Player O");
+
+  const modalTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const getWinResult = (squares: Player[]) => {
     for (const line of WINNING_LINES) {
@@ -64,14 +69,22 @@ export default function TicTacToePage() {
         spread: 60,
         origin: { y: 0.6 },
       });
+      modalTimerRef.current = setTimeout(() => {
+        setIsGameOverModalOpen(true);
+      }, 700);
     } else if (newBoard.every((sq) => sq !== null)) {
       setScores((prev) => ({ ...prev, draws: prev.draws + 1 }));
+      modalTimerRef.current = setTimeout(() => {
+        setIsGameOverModalOpen(true);
+      }, 500);
     } else {
       setIsXNext(!isXNext);
     }
   };
 
   const resetBoard = () => {
+    if (modalTimerRef.current) clearTimeout(modalTimerRef.current);
+    setIsGameOverModalOpen(false);
     setBoard(Array(9).fill(null));
     setIsXNext(true);
   };
@@ -90,11 +103,33 @@ export default function TicTacToePage() {
         onStartGame={handleStartGame}
       />
 
-      {/* Header */}
+      <GameOverModal
+        open={isGameOverModalOpen}
+        onOpenChange={setIsGameOverModalOpen}
+        winner={winner}
+        isDraw={isDraw}
+        playerXName={playerXName}
+        playerOName={playerOName}
+        scores={scores}
+        onNewRound={resetBoard}
+        onChangePlayers={resetAll}
+      />
+
+      {/* Header with Logo on the Right */}
       <div className="text-center mb-10">
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-slate-900 to-red-600 bg-clip-text text-transparent mb-2">
-          Tic-Tac-Toe
-        </h1>
+        <div className="inline-flex items-center justify-center gap-3 mb-2">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-slate-900 to-red-600 bg-clip-text text-transparent">
+            Tic-Tac-Toe
+          </h1>
+          <Image
+            src="/tic-tac-toe-logo.png"
+            alt="Tic-Tac-Toe Logo"
+            width={64}
+            height={64}
+            className="object-contain mix-blend-multiply"
+            priority
+          />
+        </div>
         <p className="text-slate-600 text-base">
           Challenge your friends in this classic game!
         </p>
