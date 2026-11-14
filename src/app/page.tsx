@@ -184,8 +184,8 @@ export default function TicTacToePage() {
           <Image
             src="/tic-tac-toe-logo.png"
             alt="Tic-Tac-Toe Logo"
-            width={64}
-            height={64}
+            width={100}
+            height={100}
             className="object-contain mix-blend-multiply"
             priority
           />
