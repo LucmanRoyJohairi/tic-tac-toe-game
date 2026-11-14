@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import confetti from "canvas-confetti";
-import { RotateCcw, Users } from "lucide-react";
+import { RotateCcw, Users, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Player, Scores, WinningLine } from "@/components/game/types";
 import { PlayerNameModal } from "@/components/game/player-name-modal";
@@ -11,6 +11,7 @@ import { GameBoard } from "@/components/game/game-board";
 import { GameStatus } from "@/components/game/game-status";
 import { ScoreBoard } from "@/components/game/score-board";
 import { GameOverModal } from "@/components/game/game-over-modal";
+import { arcadeAudio } from "@/lib/sound-effects";
 
 const WINNING_LINES: WinningLine[] = [
   { a: 0, b: 1, c: 2 },
@@ -32,8 +33,35 @@ export default function TicTacToePage() {
   const [isGameOverModalOpen, setIsGameOverModalOpen] = useState<boolean>(false);
   const [playerXName, setPlayerXName] = useState<string>("Player X");
   const [playerOName, setPlayerOName] = useState<string>("Player O");
+  const [isMuted, setIsMuted] = useState<boolean>(false);
 
   const modalTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Stop background music cleanly if user leaves the page
+  // Attempt autoplay on load & unlock immediately on first click or keypress
+  useEffect(() => {
+    arcadeAudio.startMusic();
+
+    const handleFirstInteraction = () => {
+      arcadeAudio.unlockAndStart();
+    };
+
+    window.addEventListener("pointerdown", handleFirstInteraction);
+    window.addEventListener("keydown", handleFirstInteraction);
+
+    return () => {
+      window.removeEventListener("pointerdown", handleFirstInteraction);
+      window.removeEventListener("keydown", handleFirstInteraction);
+      arcadeAudio.stopMusic();
+    };
+  }, []);
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    arcadeAudio.setMuted(nextMuted);
+  };
+
 
   const getWinResult = (squares: Player[]) => {
     for (const line of WINNING_LINES) {
@@ -52,10 +80,18 @@ export default function TicTacToePage() {
     setPlayerXName(nameX);
     setPlayerOName(nameO);
     setIsNameModalOpen(false);
+    arcadeAudio.startMusic();
   };
 
   const handleSquareClick = (index: number) => {
     if (board[index] || winner) return;
+
+    // Play distinct click sound for X vs O
+    if (isXNext) {
+      arcadeAudio.playPlaceX();
+    } else {
+      arcadeAudio.playPlaceO();
+    }
 
     const newBoard = [...board];
     newBoard[index] = isXNext ? "X" : "O";
@@ -64,6 +100,7 @@ export default function TicTacToePage() {
     const { winner: newWinner } = getWinResult(newBoard);
     if (newWinner) {
       setScores((prev) => ({ ...prev, [newWinner]: prev[newWinner] + 1 }));
+      arcadeAudio.playWin();
       confetti({
         particleCount: 70,
         spread: 60,
@@ -74,6 +111,7 @@ export default function TicTacToePage() {
       }, 700);
     } else if (newBoard.every((sq) => sq !== null)) {
       setScores((prev) => ({ ...prev, draws: prev.draws + 1 }));
+      arcadeAudio.playDraw();
       modalTimerRef.current = setTimeout(() => {
         setIsGameOverModalOpen(true);
       }, 500);
@@ -96,7 +134,29 @@ export default function TicTacToePage() {
   };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/60 via-slate-50 to-red-50/40 flex flex-col items-center justify-center p-6">
+    <main className="relative min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-50/60 via-slate-50 to-red-50/40 flex flex-col items-center justify-center p-6">
+      {/* Top-Right Mute / Unmute Button */}
+      <div className="fixed top-5 right-5 z-40">
+        <Button
+          onClick={toggleMute}
+          variant="outline"
+          size="sm"
+          className="rounded-full bg-white/90 backdrop-blur-xs border-slate-200/80 shadow-xs text-slate-700 hover:bg-slate-100 gap-2 px-3.5 h-9"
+        >
+          {isMuted ? (
+            <>
+              <VolumeX className="h-4 w-4 text-red-500" />
+              <span className="text-xs font-semibold">Muted</span>
+            </>
+          ) : (
+            <>
+              <Volume2 className="h-4 w-4 text-blue-600" />
+              <span className="text-xs font-semibold">Sound On</span>
+            </>
+          )}
+        </Button>
+      </div>
+
       <PlayerNameModal
         open={isNameModalOpen}
         onOpenChange={setIsNameModalOpen}
